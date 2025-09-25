@@ -1,0 +1,64 @@
+#include <USB.h>
+#include <USBHIDMouse.h>
+
+void setup() {
+  Serial.begin(9600);
+
+  pinMode(34, INPUT_PULLUP);
+  pinMode(35, INPUT_PULLUP);
+  pinMode(32, INPUT_PULLUP);
+  pinMode(33, INPUT_PULLUP);
+  pinMode(25, INPUT_PULLUP);
+  pinMode(26, INPUT_PULLUP);
+  pinMode(27, INPUT_PULLUP);
+
+//botones
+  pinMode(19, INPUT_PULLUP);
+  pinMode(18, INPUT_PULLUP);
+
+  pinMode(23, OUTPUT);
+}
+
+void loop() {
+  // Digital button inputs
+  int x = digitalRead(19);
+  int y = digitalRead(18);
+
+
+  // Analog inputs from eight pins
+  int analog_1 = analogRead(34); // Example: ADC1_CH0
+  int analog_2 = analogRead(35); // Example: ADC1_CH3
+  int analog_3 = analogRead(32); // Example: ADC1_CH6
+  int analog_4 = analogRead(33); // Example: ADC1_CH7
+  int analog_5 = analogRead(25); // Example: ADC1_CH4
+  int analog_6 = analogRead(26); // Example: ADC1_CH5
+  int analog_7 = analogRead(27); // Example: ADC2_CH8
+
+  digitalWrite(23, HIGH); 
+
+
+  //Serial.println(x);
+
+if (y == 0) {   Serial.println("funciona!");}
+
+
+  // Print analog values
+if (x == 0) { 
+  Serial.print("Eje Y: ");
+  Serial.println(analog_1);
+  Serial.print("Eje X: ");
+  Serial.println(analog_2);
+  //Serial.print("Analog 3 (Pin 32): ");
+  //Serial.println(analog_3);
+  /*Serial.print("Analog 4 (Pin 33): ");
+  Serial.println(analog_4);
+  Serial.print("Analog 5 (Pin 25): ");
+  Serial.println(analog_5);
+  Serial.print("Analog 6 (Pin 26): ");
+  Serial.println(analog_6);
+  Serial.print("Analog 7 (Pin 27): ");
+  Serial.println(analog_7);*/
+}
+  delay(100);
+}
+
