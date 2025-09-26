@@ -62,3 +62,264 @@ if (x == 0) {
   delay(100);
 }
 
+
+
+
+
+
+
+
+/* extra code
+const int botonIzquierdaPin = 0;
+// Conecta un botón externo entre GPIO34 y GND
+const int botonDerechaPin = 34;
+
+// Instanciar el objeto para controlar el mouse
+USBHIDMouse mouse;
+
+void setup() {
+  // Iniciar el puerto serie para ver la salida de depuración
+  Serial.begin(115200);
+  
+  // Configurar los pines de los botones como entradas con pull-up interno.
+  // Esto es necesario para que el pin no "flote" cuando el botón no está presionado.
+  pinMode(botonIzquierdaPin, INPUT_PULLUP);
+  pinMode(botonDerechaPin, INPUT_PULLUP);
+
+  // Iniciar la emulación del dispositivo USB
+  USB.begin();
+  
+  // Iniciar el control del mouse
+  mouse.begin();
+}
+
+void loop() {
+  // Leer el estado de los botones.
+  // El '!' es porque el botón se activa al conectarse a GND,
+  // por lo que el estado de lectura es LOW (0) cuando se presiona.
+  bool botonIzquierdaPresionado = !digitalRead(botonIzquierdaPin);
+  bool botonDerechaPresionado = !digitalRead(botonDerechaPin);
+
+  // Mover el cursor a la izquierda si el botón izquierdo está presionado
+  if (botonIzquierdaPresionado) {
+    mouse.move(-5, 0); // Mueve -5 en el eje X (izquierda), 0 en el eje Y
+    Serial.println("Moviendo a la izquierda...");
+  }
+
+  // Mover el cursor a la derecha si el botón derecho está presionado
+  if (botonDerechaPresionado) {
+    mouse.move(5, 0); // Mueve 5 en el eje X (derecha), 0 en el eje Y
+    Serial.println("Moviendo a la derecha...");
+  }
+
+  // Pequeña pausa para controlar la velocidad del movimiento y evitar lecturas erráticas.
+  delay(10);
+}
+
+
+
+
+
+/*String inputString = "";
+bool stringComplete = false;
+
+void setup() {
+ /* Serial.begin(9600);
+  pinMode(2, INPUT_PULLUP);      // Botón ON/OFF
+  pinMode(3, INPUT_PULLUP);      // Botón sumar
+  pinMode(8, INPUT_PULLUP);      // Botón mostrar
+  pinMode(12, INPUT_PULLUP);     // Boton Analog a Bin
+
+  pinMode(10, OUTPUT);
+  pinMode(9, OUTPUT);
+  pinMode(A1, OUTPUT); // encendido/apagado
+  pinMode(A2, OUTPUT);
+  pinMode(A3, OUTPUT);
+  pinMode(A4, OUTPUT);
+  pinMode(A5, OUTPUT);
+  pinMode(6,     OUTPUT);
+  pinMode(7,     OUTPUT);
+
+  pinMode(A0, INPUT); // Entrada potenciómetro
+}*/
+
+/*int Bin[8] = {0, 0, 0, 0, 0, 0, 0, 0};    // binario inicial
+static bool CheckAn = 0; //  Analógico a 
+static bool CheckAn2 = 0; //  ON OFF
+
+int getDecimalValueFromBinary() {
+  int decimalValue = 0;
+  for (int k = 0; k < 8; k++) {
+    if (Bin[k] == 1) {
+      decimalValue += (1 << (7 - k));
+    }
+  }
+  return decimalValue;
+}*/
+/*
+void printCurrentState() {
+  String binaryString = "";
+  for (int k = 0; k < 8; k++) {
+    binaryString += String(Bin[k]);
+  }
+
+  int currentDecimal = getDecimalValueFromBinary();
+  int valorAnalogico = analogRead(A0);
+  int valorEscalado = map(valorAnalogico, 0, 1023, 0, 255); // Rango de A0 es 0-1023
+
+  Serial.print("B:");
+  Serial.print(binaryString);
+  Serial.print(",D:");
+  Serial.print(currentDecimal);
+  Serial.print(",P:");
+  Serial.print(valorEscalado); // Siempre envía el valor PWM actual
+  Serial.println(); // Nueva línea al final
+}*/
+
+/*
+void loop() {
+  int x = digitalRead(2);    // Botón para Toggle ON/OFF
+  int y = digitalRead(3);    // Botón Sumar
+  int z = digitalRead(8);    // Botón Mostrar
+  int w = digitalRead(12);   // Boton Analog/Binary Mode Toggle
+
+  static int O = 0;   
+  int valorAnalogico = analogRead(A0);
+  int valorEscalado = map(valorAnalogico, 0, 1023, 0, 255); 
+
+  digitalWrite(A1, O);
+
+  digitalWrite(10, Bin[0]);
+  digitalWrite(9, Bin[1]);
+  digitalWrite(A2, Bin[2]);
+  digitalWrite(A3, Bin[3]);
+  digitalWrite(A4, Bin[4]);
+  digitalWrite(A5, Bin[5]);
+  digitalWrite(6,     Bin[6]);
+  digitalWrite(7,     Bin[7]);
+
+  if (z == 0) { // 'Mostrar'
+    if (CheckAn == 0) { // Modo binario
+      Serial.println("Modo: BINARIO");
+    } else { // Modo analógico
+      Serial.println("Modo: ANALOGICO");
+    }
+    printCurrentState(); 
+    delay(300); 
+  }
+
+  //  ON/OFF 
+  if (x == 0) {
+    if (CheckAn2 == 0) {
+      CheckAn2 = 1; // Encender
+      O = HIGH; 
+      Serial.println("A1: ON");
+    } else {
+      CheckAn2 = 0; // Apagar
+      O = LOW; 
+      Serial.println("A1: OFF");
+    }
+    delay(300); 
+    printCurrentState(); 
+  }
+
+  // Sumar binario
+  if (y == 0) {
+    for (int i = 7; i >= 0; i--) {
+      if (Bin[i] == 0) {
+        Bin[i] = 1;
+        break;
+      } else {
+        Bin[i] = 0;
+      }
+    }
+    delay(300); 
+    printCurrentState();
+  }
+
+  // Analógico/Binario
+  if (w == 0) {
+    if (CheckAn == 0) {
+      CheckAn = 1; // modo analógico
+      Serial.println("ANALOG ON");
+      for (int i = 0; i < 8; i++) Bin[i] = 0; 
+    } else {
+      CheckAn = 0; // modo binario
+      Serial.println("ANALOG OFF");
+    }
+    delay(500); 
+    printCurrentState(); 
+  }
+
+  // ALGORITMO ANALÓGICO
+  if (CheckAn == 1) {
+    for (int i = 0; i < 8; i++) {
+        Bin[7 - i] = (valorEscalado >> i) & 1;
+    }
+  }
+
+
+  while (Serial.available()) {
+    char inChar = (char)Serial.read();
+    if (inChar == '\n') {
+      stringComplete = true;
+    } else if (inChar != '\r') { 
+      inputString += inChar;
+    }
+  }
+
+  if (stringComplete) {
+    if (inputString == "TOGGLE_ONOFF") { 
+      if (CheckAn2 == 0) {
+        CheckAn2 = 1; // Encender
+        O = HIGH;
+        Serial.println("A1: ON (via serial command)");
+      } else {
+        CheckAn2 = 0; // Apagar
+        O = LOW;
+        Serial.println("A1: OFF (via serial command)");
+      }
+      printCurrentState(); 
+    } else if (inputString.startsWith("P")) { 
+        String pwmStr = inputString.substring(1); 
+        int pwmValue = pwmStr.toInt();
+        if (pwmValue >= 0 && pwmValue <= 255) {
+            if (CheckAn == 0) {
+                CheckAn = 1; 
+                Serial.println("ANALOG ON (via serial PWM input)");
+            }
+            for (int i = 0; i < 8; i++) Bin[i] = 0; 
+            for (int i = 0; i < 8; i++) {
+                Bin[7 - i] = (pwmValue >> i) & 1;
+            }
+            Serial.print("PWM Input: ");
+            Serial.println(pwmValue);
+            printCurrentState(); 
+        } else {
+            Serial.println("PWM FUERA DE RANGO 0-255");
+        }
+    }
+    else { 
+      int number = inputString.toInt(); 
+      if (number >= 0 && number <= 255) {
+        if (CheckAn == 1) {
+          CheckAn = 0;
+          Serial.println("ANALOG OFF (via serial input)"); 
+        }
+
+        for (int i = 0; i < 8; i++) Bin[i] = 0; 
+        for (int i = 0; i < 8; i++) {
+            Bin[7 - i] = (number >> i) & 1;
+        }
+
+        Serial.print("INPUT DECIMAL: ");
+        Serial.println(number);
+        printCurrentState(); 
+      } else {
+        Serial.println("NUMERO FUERA DE RANGO 0-255");
+      }
+    }
+    inputString = "";
+    stringComplete = false;
+  }
+}*/
