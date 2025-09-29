@@ -1,3 +1,26 @@
+const int VRX_PIN = 34;
+const int VRY_PIN = 35;
+
+
+void setup() {
+  Serial.begin(9600);
+}
+
+
+void loop() {
+  int xValue = analogRead(VRX_PIN);
+  int yValue = analogRead(VRY_PIN);
+
+  Serial.print("X: ");
+  Serial.print(xValue);
+  Serial.print(" | Y: ");
+  Serial.println(yValue);
+  delay(50);
+}
+
+
+
+/*
 #include <USB.h>
 #include <USBHIDMouse.h>
 
@@ -62,7 +85,7 @@ if (x == 0) {
   delay(100);
 }
 
-
+*/
 
 
 
