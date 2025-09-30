@@ -1,13 +1,39 @@
+#include <Wire.h> // Librería para comunicación I2C
+#include <Adafruit_MPU6050.h> // Librería del sensor MPU-6050
+#include <Adafruit_Sensor.h> // Librería base de Adafruit para sensores
+
+// Crear el objeto para el MPU-6050
+Adafruit_MPU6050 mpu;
 const int VRX_PIN = 34;
 const int VRY_PIN = 35;
 
-
 void setup() {
-  Serial.begin(9600);
+  // 1. Iniciar la comunicación serial a alta velocidad (¡Asegúrate de usar 115200 en el Monitor Serial!)
+  Serial.begin(115200); 
+  
+  // 2. Inicialización del MPU-6050
+  Serial.println("Inicializando MPU-6050...");
+  
+  // Intenta comenzar la comunicación con el sensor en la dirección I2C por defecto (0x68).
+  // Si falla, el programa se detiene.
+  if (!mpu.begin()) {
+    Serial.println("❌ ERROR: Fallo al encontrar el chip MPU-6050. Verifica las conexiones.");
+    Serial.println("Asegúrate que SDA=GPIO 21 y SCL=GPIO 22 y VCC=3V3.");
+    // Detiene el programa aquí
+    while (1) {
+      delay(100); 
+    }
+  }
+  Serial.println("✅ MPU-6050 Encontrado y Listo!");
+
+  // Configuración de los rangos del sensor (opcional, pero recomendado)
+  mpu.setAccelerometerRange(MPU6050_RANGE_8_G); 
+  mpu.setGyroRange(MPU6050_RANGE_500_DEG);     
+  mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);  
 }
 
-
 void loop() {
+
   int xValue = analogRead(VRX_PIN);
   int yValue = analogRead(VRY_PIN);
 
@@ -15,11 +41,38 @@ void loop() {
   Serial.print(xValue);
   Serial.print(" | Y: ");
   Serial.println(yValue);
-  delay(50);
+
+  // Estructuras de datos para almacenar la lectura
+  sensors_event_t a, g, temp;
+
+  // Obtener los datos más recientes de aceleración, giroscopio y temperatura
+  mpu.getEvent(&a, &g, &temp);
+
+  // --- IMPRESIÓN DE DATOS (ACELERACIÓN) ---
+  // Los valores son en metros por segundo al cuadrado (m/s^2)
+  Serial.print("X: ");
+  Serial.print(a.acceleration.x, 1); 
+  Serial.print("_Y: ");
+  Serial.println(a.acceleration.y, 1);
+  /*Serial.print(" |Z: ");
+  Serial.print(a.acceleration.z, 2);
+  
+  // --- IMPRESIÓN DE DATOS (GIROSCOPIO) ---
+  // Los valores son en radianes por segundo (rad/s)
+  Serial.print(" ||X: ");
+  Serial.print(g.gyro.x, 2); 
+  Serial.print(" |Y: ");
+  Serial.print(g.gyro.y, 2);
+  Serial.print(" |Z: ");
+  Serial.println(g.gyro.z, 2);
+*/
+  delay(300); // Pausa para no saturar el puerto serial
 }
 
 
 
+
+//CODIGO EXTRA
 /*
 #include <USB.h>
 #include <USBHIDMouse.h>
