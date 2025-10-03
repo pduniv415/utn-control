@@ -3,88 +3,67 @@
 #include <Adafruit_Sensor.h> // Librería base de Adafruit para sensores
 #include <BleMouse.h>
 
-BleMouse bleMouse("ESP32 Mouse", "ESP32", 100);  // Create the BLE Mouse object
-Adafruit_MPU6050 mpu;  // Crear el objeto para el MPU-6050
+BleMouse bleMouse("ESP32 Mouse", "ESP32", 100);
+Adafruit_MPU6050 mpu;
 const int VRX_PIN = 34;
 const int VRY_PIN = 35;
 
 void setup() {
   // 1. Iniciar la comunicación serial a alta velocidad (¡Asegúrate de usar 115200 en el Monitor Serial!)
   Serial.begin(115200); 
+  bleMouse.begin();
   pinMode(23, OUTPUT);
-  pinMode(13, INPUT_PULLUP);
-  /*bleMouse.begin();   // Initialize BLE Mouse
-*/
- 
+
+  // 2. Inicialización del MPU-6050
+  Serial.println("Inicializando MPU-6050...");
+
+  // Intenta comenzar la comunicación con el sensor en la dirección I2C por defecto (0x68).
+  // Si falla, el programa se detiene.
+  if (!mpu.begin()) {
+    Serial.println("❌ ERROR: Fallo al encontrar el chip MPU-6050. Verifica las conexiones.");
+    Serial.println("Asegúrate que SDA=GPIO 21 y SCL=GPIO 22 y VCC=3V3.");
+    // Detiene el programa aquí
+    while (1) {
+      delay(100); 
+    }
+  }
+  Serial.println("✅ MPU-6050 Encontrado y Listo!");
+
   // Configuración de los rangos del sensor (opcional, pero recomendado)
-  /*mpu.setAccelerometerRange(MPU6050_RANGE_8_G); 
+  mpu.setAccelerometerRange(MPU6050_RANGE_8_G); 
   mpu.setGyroRange(MPU6050_RANGE_500_DEG);     
-  mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);  */
+  mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);  
 }
 
 void loop() {
+
   int xValue = analogRead(VRX_PIN);
   int yValue = analogRead(VRY_PIN);
   digitalWrite(23, HIGH); 
-  int BotonUpd = analogRead(13);
   sensors_event_t a, g, temp;
+  mpu.getEvent(&a, &g, &temp);
 
+xValue = xValue-2850;
+yValue = yValue-2850;
+if(xValue < 0){
+  xValue = xValue/2.289;}
+if(yValue < 0){
+  yValue = yValue/2.289;}
   Serial.print("X: ");
-  Serial.print(xValue);
+  Serial.print(xValue/207.3);
   Serial.print(" | Y: ");
-  Serial.println(yValue);
-
-
-  /*mpu.getEvent(&a, &g, &temp);*/
-  // --- IMPRESIÓN DE DATOS (ACELERACIÓN) ---
+  Serial.println(yValue/207.3);
   Serial.print("X: ");
-  Serial.print(a.acceleration.x,1); 
-  Serial.print(" |  Y: ");
-  Serial.println(a.acceleration.y,1);
+  Serial.print(a.acceleration.x, 1); 
+  Serial.print("Y_: ");
+  Serial.println(a.acceleration.y, 1);
 
-  if (BotonUpd == 0) {   Serial.print("elpepe");}
+/*if(a.acceleration.x < 0.8 ||){a.acceleration.x = 0;}
+if(a.acceleration.y < 0.8 ||a.acceleration.x > -0.8 ){a.acceleration.y = 0;}*/
 
- 
-  delay(300); // Pausa para no saturar el puerto serial
+
+bleMouse.move(-a.acceleration.x*3 ,-a.acceleration.y*3);
+
+
+  delay(30); // Pausa para no saturar el puerto serial
 }
-
-
-
-
-/*
-void loop() {
-
- while(bleMouse.isConnected() && ) {
-    Serial.println("Mouse connected - moving cursor...");
-
-    // Move right
-    for (int i = 0; i < 50; i++) {
-      bleMouse.move(5, 0); // x, y
-      delay(20);
-    }
-
-    // Move down
-    for (int i = 0; i < 50; i++) {
-      bleMouse.move(0, 5);
-      delay(20);
-    }
-
-    // Move left
-    for (int i = 0; i < 50; i++) {
-      bleMouse.move(-5, 0);
-      delay(20);
-    }
-
-    // Move up
-    for (int i = 0; i < 50; i++) {
-      bleMouse.move(0, -5);
-      delay(20);
-    }
-
-    // Left click
-    Serial.println("Click!");
-    bleMouse.click(MOUSE_LEFT);
-
-    delay(2000); // Pause 2s before repeating
-  }
-}*/
