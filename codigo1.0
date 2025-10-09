@@ -49,21 +49,34 @@ if(xValue < 0){
   xValue = xValue/2.289;}
 if(yValue < 0){
   yValue = yValue/2.289;}
-  Serial.print("X: ");
-  Serial.print(xValue/207.3);
-  Serial.print(" | Y: ");
-  Serial.println(yValue/207.3);
-  Serial.print("X: ");
+  
+ if(xValue == 1245 && yValue == 1245){
+  xValue = 0;
+  yValue = 0;}
+
+  //Serial.print("X: ");
+  Serial.print(xValue/20.73);
+  //Serial.print(" | Y: ");
+  Serial.println(yValue/20.73);
+  //Serial.print("X: ");
   Serial.print(a.acceleration.x, 1); 
-  Serial.print("Y_: ");
+  //Serial.print("  Y_: ");
   Serial.println(a.acceleration.y, 1);
+  Serial.print(g.gyro.x,1);
+  Serial.println(g.gyro.y, 1);
+
 
 /*if(a.acceleration.x < 0.8 ||){a.acceleration.x = 0;}
 if(a.acceleration.y < 0.8 ||a.acceleration.x > -0.8 ){a.acceleration.y = 0;}*/
 
 
-bleMouse.move(-a.acceleration.x*3 ,-a.acceleration.y*3);
+bleMouse.move(-g.gyro.z*50,-g.gyro.x*30);
+//bleMouse.move(-a.acceleration.x*3 ,0);
 
 
   delay(30); // Pausa para no saturar el puerto serial
 }
+
+
+
+
