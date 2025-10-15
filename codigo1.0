@@ -13,8 +13,10 @@ void setup() {
   Serial.begin(115200); 
   bleMouse.begin();
   pinMode(23, OUTPUT);
+  pinMode(15  , INPUT_PULLUP);
   pinMode(10, INPUT_PULLUP);
   pinMode(9, INPUT_PULLUP);
+  pinMode(10, INPUT_PULLUP);
 
 
   // 2. Inicialización del MPU-6050
@@ -41,6 +43,7 @@ void setup() {
 void loop() {
   int x = digitalRead(10);
   int y = digitalRead(9);
+  int z  = digitalRead( 15);
 
   int xValue = analogRead(VRX_PIN);
   int yValue = analogRead(VRY_PIN);
@@ -82,13 +85,16 @@ if(yValue/20.73 < 0){
   Serial.println(g.gyro.y, 1);
 
 
-if (x == 0) {
-bleMouse.move(-g.gyro.z*40,-g.gyro.x*40,yValue/20.73);}
-if (x == 1) {
-bleMouse.move(xValue/207.3,yValue/207.3);}
 if (y == 0) {
+bleMouse.move(-g.gyro.z*40,-g.gyro.x*40,-yValue/1000,xValue/1000);}
+if (y == 1) {
+bleMouse.move(xValue/207.3,yValue/207.3);}
+if (x == 0) {
 bleMouse.click();
 delay(200);}
+if (z == 0) {bleMouse.click(MOUSE_RIGHT);
+delay(600);}
+
 
 
 
