@@ -80,37 +80,29 @@ if (y == 0) {
   l = l*l;
   delay(600);}
 if (l == 0) {
-bleMouse.move(-g.gyro.z*40,-g.gyro.x*40,-yValue/1000,xValue/1000);}
+bleMouse.move(-g.gyro.z*60,-g.gyro.x*40,-yValue/1000,xValue/1000);}
 if (l == 1) {
-bleMouse.move(xValue/207.3,yValue/207.3);}
+bleMouse.move(-g.gyro.z*20+xValue/207.3,-g.gyro.x*15+yValue/207.3);}
+
+
+//BOTONES
 if (x == 0) {
 m = m+1;
-
-
 if(m > 7){
 bleMouse.press();
 }}
-
-
 if (x != 0) {
 if(m < 7){
 if(m !=0){
 if(k == 0){
 bleMouse.click();
 k = 1;}}}
-
-
 m = 0;
 k = 0;
 bleMouse.release();}
 Serial.print(k);
 Serial.println(m);
-
 if (z == 0) {bleMouse.click(MOUSE_RIGHT);
 delay(600);}
-
-
-
-
-  delay(30); // Pausa para no saturar el puerto serial
+delay(30); // Pausa para no saturar el puerto serial
 }
