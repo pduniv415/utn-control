@@ -44,7 +44,9 @@ void loop() {
   int x = digitalRead(10);
   int y = digitalRead(9);
   int z  = digitalRead( 15);
-
+  static int l = 0; //cambia de girosc a joystick
+  static int m = 0; //contador click
+  static int k = 0; //solo clickear 1 ves
   int xValue = analogRead(VRX_PIN);
   int yValue = analogRead(VRY_PIN);
   digitalWrite(23, HIGH); 
@@ -62,15 +64,6 @@ if(yValue < 0){
   xValue = 0;
   yValue = 0;}
 
-  //Serial.print("X: ");
-  Serial.print(xValue/20.73);
-  //Serial.print(" | Y: ");
-  Serial.println(yValue/20.73);
-  //Serial.print("X: ");
-  Serial.print(a.acceleration.x, 1); 
-  //Serial.print("  Y_: ");
-  Serial.println(a.acceleration.y, 1);
-
 if(g.gyro.x < 0){
     if(g.gyro.x >= -0.15){
      g.gyro.x = 0;}}
@@ -81,17 +74,38 @@ if(yValue/20.73 < 0){
     if(yValue/20.73 >= -5){
      yValue = 0;}}
 
-  Serial.print(g.gyro.x,1);
-  Serial.println(g.gyro.y, 1);
 
-
-if (y == 0) {
+if (y == 0) { 
+  l = (l-1);
+  l = l*l;
+  delay(600);}
+if (l == 0) {
 bleMouse.move(-g.gyro.z*40,-g.gyro.x*40,-yValue/1000,xValue/1000);}
-if (y == 1) {
+if (l == 1) {
 bleMouse.move(xValue/207.3,yValue/207.3);}
 if (x == 0) {
+m = m+1;
+
+
+if(m > 7){
+bleMouse.press();
+}}
+
+
+if (x != 0) {
+if(m < 7){
+if(m !=0){
+if(k == 0){
 bleMouse.click();
-delay(200);}
+k = 1;}}}
+
+
+m = 0;
+k = 0;
+bleMouse.release();}
+Serial.print(k);
+Serial.println(m);
+
 if (z == 0) {bleMouse.click(MOUSE_RIGHT);
 delay(600);}
 
