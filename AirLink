@@ -9,32 +9,20 @@ const int VRX_PIN = 34;
 const int VRY_PIN = 35;
 
 void setup() {
-  // 1. Iniciar la comunicación serial a alta velocidad (¡Asegúrate de usar 115200 en el Monitor Serial!)
   Serial.begin(115200); 
   bleMouse.begin();
-  pinMode(23, OUTPUT);
   pinMode(15  , INPUT_PULLUP);
   pinMode(10, INPUT_PULLUP);
   pinMode(9, INPUT_PULLUP);
-  pinMode(10, INPUT_PULLUP);
 
-
-  // 2. Inicialización del MPU-6050
   Serial.println("Inicializando MPU-6050...");
 
-  // Intenta comenzar la comunicación con el sensor en la dirección I2C por defecto (0x68).
-  // Si falla, el programa se detiene.
   if (!mpu.begin()) {
-    Serial.println("❌ ERROR: Fallo al encontrar el chip MPU-6050. Verifica las conexiones.");
-    Serial.println("Asegúrate que SDA=GPIO 21 y SCL=GPIO 22 y VCC=3V3.");
-    // Detiene el programa aquí
     while (1) {
       delay(100); 
     }
   }
-  Serial.println("✅ MPU-6050 Encontrado y Listo!");
 
-  // Configuración de los rangos del sensor (opcional, pero recomendado)
   mpu.setAccelerometerRange(MPU6050_RANGE_8_G); 
   mpu.setGyroRange(MPU6050_RANGE_500_DEG);     
   mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);  
@@ -49,7 +37,6 @@ void loop() {
   static int k = 0; //solo clickear 1 ves
   int xValue = analogRead(VRX_PIN);
   int yValue = analogRead(VRY_PIN);
-  digitalWrite(23, HIGH); 
   sensors_event_t a, g, temp;
   mpu.getEvent(&a, &g, &temp);
 
@@ -100,8 +87,6 @@ k = 1;}}}
 m = 0;
 k = 0;
 bleMouse.release();}
-Serial.print(k);
-Serial.println(m);
 if (z == 0) {bleMouse.click(MOUSE_RIGHT);
 delay(600);}
 delay(30); // Pausa para no saturar el puerto serial
