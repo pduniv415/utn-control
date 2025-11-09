@@ -63,13 +63,26 @@ if(yValue/20.73 < 0){
 
 
 if (y == 0) { 
-  l = (l-1);
-  l = l*l;
-  delay(600);}
-if (l == 0) {
-bleMouse.move(-g.gyro.z*60,-g.gyro.x*40,-yValue/1000,xValue/1000);}
-if (l == 1) {
-bleMouse.move(-g.gyro.z*20+xValue/207.3,-g.gyro.x*15+yValue/207.3);}
+        l = (l + 1) % 3; // Cicla entre 0, 1 y 2
+        Serial.print("Modo cambiado a: ");
+        Serial.println(l);
+        delay(600); // Debounce
+    }
+  
+ switch (l) {
+            case 0: // Modo 0: Gyro (Movimiento) + Joystick (Scroll)
+               bleMouse.move(-g.gyro.z*60,-g.gyro.x*40,-yValue/1000,xValue/1000);
+                break;
+
+            case 1: // Modo 1: Híbrido (Gyro Reducido + Joystick)
+               bleMouse.move(-g.gyro.z*20+xValue/207.3,-g.gyro.x*15+yValue/207.3);
+                break;
+
+            case 2: // Modo 2: Joystick Puro (Mouse)
+                    Serial.println("nope");
+
+                break;
+        }
 
 
 //BOTONES
