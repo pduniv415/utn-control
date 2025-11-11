@@ -31,10 +31,11 @@ namespace AimTrainer
             this.btnStart = new System.Windows.Forms.Button();
             this.lblScore = new System.Windows.Forms.Label();
             this.btnExport = new System.Windows.Forms.Button();
+            this.progressBarTimer = new System.Windows.Forms.ProgressBar(); // ¡NUEVO!
             this.SuspendLayout();
-            // 
+            //
             // btnStart
-            // 
+            //
             this.btnStart.Location = new System.Drawing.Point(12, 5);
             this.btnStart.Name = "btnStart";
             this.btnStart.Size = new System.Drawing.Size(91, 36);
@@ -42,9 +43,9 @@ namespace AimTrainer
             this.btnStart.Text = "Iniciar";
             this.btnStart.UseVisualStyleBackColor = true;
             this.btnStart.Click += new System.EventHandler(this.btnStart_Click);
-            // 
+            //
             // lblScore
-            // 
+            //
             this.lblScore.AutoSize = true;
             this.lblScore.Location = new System.Drawing.Point(208, 17);
             this.lblScore.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
@@ -53,9 +54,9 @@ namespace AimTrainer
             this.lblScore.TabIndex = 1;
             this.lblScore.Text = "Puntuación: 0";
             this.lblScore.Click += new System.EventHandler(this.lblScore_Click);
-            // 
+            //
             // btnExport
-            // 
+            //
             this.btnExport.Location = new System.Drawing.Point(688, 5);
             this.btnExport.Name = "btnExport";
             this.btnExport.Size = new System.Drawing.Size(100, 36);
@@ -63,12 +64,22 @@ namespace AimTrainer
             this.btnExport.Text = "Guardar";
             this.btnExport.UseVisualStyleBackColor = true;
             this.btnExport.Click += new System.EventHandler(this.btnExport_Click);
-            // 
+            //
+            // progressBarTimer
+            //
+            this.progressBarTimer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right))); // Anclado a la parte superior derecha
+            this.progressBarTimer.Location = new System.Drawing.Point(400, 14); // Ajusta la posición según sea necesario
+            this.progressBarTimer.Name = "progressBarTimer";
+            this.progressBarTimer.Size = new System.Drawing.Size(280, 20); // Ajusta el tamaño
+            this.progressBarTimer.TabIndex = 3; // O el siguiente índice disponible
+            this.progressBarTimer.Value = 100; // Inicia lleno
+            //
             // Form1
-            // 
+            //
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.progressBarTimer); // ¡AÑADIDO A LOS CONTROLES!
             this.Controls.Add(this.btnExport);
             this.Controls.Add(this.lblScore);
             this.Controls.Add(this.btnStart);
@@ -88,5 +99,6 @@ namespace AimTrainer
         private System.Windows.Forms.Button btnStart;
         private System.Windows.Forms.Label lblScore;
         private System.Windows.Forms.Button btnExport;
+        private System.Windows.Forms.ProgressBar progressBarTimer; // ¡DECLARACIÓN DE LA VARIABLE!
     }
 }
