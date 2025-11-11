@@ -14,14 +14,13 @@ namespace AimTrainer
         private Button targetButton;
         private Random random = new Random();
         private List<ResultEntry> results = new List<ResultEntry>();
-        private Timer disappearTimer = new Timer();
-        private Timer disappearTimer2 = new Timer();
-
+        private Timer disappearTimer = new Timer(); // Temporizador principal para la lógica del juego
+        private Timer progressBarUpdateTimer = new Timer(); // ¡NUEVO! Temporizador para la barra de progreso
 
         private DateTime actionStartTime;
         private bool isHolding = false;
-        private const int ACTION_TIME_2MS = 3000;
-        private const int ACTION_TIME_MS = 1000; 
+        private const int ACTION_TIME_LIMIT_MS = 5000; // 5 segundos para cualquier acción
+        private const int HOLD_TIME_MS = 1000; // Tiempo para 'Mantener Click'
 
         private enum TargetType
         {
@@ -33,7 +32,7 @@ namespace AimTrainer
         private TargetType currentTargetType;
         private TargetType lastTargetType = TargetType.NoClick;
         private int clickCount = 0;
-        private Timer clickTimer = new Timer { Interval = 600 }; 
+        private Timer clickTimer = new Timer { Interval = 600 };
         private const int CLICK_TIMER_INTERVAL = 600;
 
         public Form1()
@@ -51,11 +50,12 @@ namespace AimTrainer
             targetButton.MouseDown += TargetButton_MouseDown;
             targetButton.MouseUp += TargetButton_MouseUp;
 
-            disappearTimer2.Interval = ACTION_TIME_2MS;
-            disappearTimer2.Tick += DisappearTimer_Tick;
-
-            disappearTimer.Interval = ACTION_TIME_MS;
+            disappearTimer.Interval = ACTION_TIME_LIMIT_MS;
             disappearTimer.Tick += DisappearTimer_Tick;
+
+            // Configuración del nuevo temporizador para la barra de progreso
+            progressBarUpdateTimer.Interval = 50; // Actualizar cada 50 ms para una animación suave
+            progressBarUpdateTimer.Tick += ProgressBarUpdateTimer_Tick;
 
             clickTimer.Interval = CLICK_TIMER_INTERVAL;
             clickTimer.Tick += ClickCountTimer_Tick;
@@ -63,6 +63,12 @@ namespace AimTrainer
             this.MouseDown += Form1_MouseDown;
 
             this.Controls.Add(targetButton);
+
+            // Inicializar la barra de progreso
+            progressBarTimer.Minimum = 0;
+            progressBarTimer.Maximum = 100;
+            progressBarTimer.Value = 100; // Empieza lleno
+            progressBarTimer.Step = 1; // El paso no se usará directamente, pero es buena práctica
         }
 
         public class ResultEntry
@@ -88,6 +94,8 @@ namespace AimTrainer
             {
                 targetButton.Visible = false;
                 disappearTimer.Stop();
+                progressBarUpdateTimer.Stop(); // Detener el temporizador de la barra de progreso
+                progressBarTimer.Value = 100; // Restablecer la barra
                 clickTimer.Stop();
                 clickCount = 0;
                 isHolding = false;
@@ -98,8 +106,10 @@ namespace AimTrainer
         {
             if (!gameRunning) return;
 
-            disappearTimer2.Stop();
             disappearTimer.Stop();
+            progressBarUpdateTimer.Stop(); // Detener cualquier actualización anterior de la barra
+            progressBarTimer.Value = 100; // Reiniciar la barra de progreso al 100%
+
             clickTimer.Stop();
             clickCount = 0;
             isHolding = false;
@@ -112,10 +122,9 @@ namespace AimTrainer
                 int randomValue = random.Next(numTargetTypes);
                 newTargetType = (TargetType)randomValue;
             }
-            while (newTargetType == lastTargetType); 
+            while (newTargetType == lastTargetType);
 
             currentTargetType = newTargetType;
-
             lastTargetType = currentTargetType;
 
             int targetSize = targetButton.Width;
@@ -136,43 +145,82 @@ namespace AimTrainer
                 case TargetType.SingleClick:
                     targetButton.Text = "1 CLICK";
                     targetButton.BackColor = Color.LightGreen;
+                    disappearTimer.Interval = ACTION_TIME_LIMIT_MS;
                     break;
                 case TargetType.DoubleClick:
                     targetButton.Text = "2 CLICKS";
                     targetButton.BackColor = Color.LightBlue;
+                    disappearTimer.Interval = ACTION_TIME_LIMIT_MS;
                     break;
                 case TargetType.HoldClick:
-                    targetButton.Text = $"MANTENER";
+                    targetButton.Text = $"MANTENER {HOLD_TIME_MS / 1000}s";
                     targetButton.BackColor = Color.Orange;
+                    disappearTimer.Interval = ACTION_TIME_LIMIT_MS;
                     break;
                 case TargetType.NoClick:
                     targetButton.Text = $"NO CLICK";
                     targetButton.BackColor = Color.LightCoral;
-                    disappearTimer2.Start();
+                    disappearTimer.Interval = ACTION_TIME_LIMIT_MS;
                     break;
             }
 
             targetButton.Visible = true;
             actionStartTime = DateTime.Now;
+            disappearTimer.Start(); // Iniciar el temporizador principal del juego
+            progressBarUpdateTimer.Start(); // Iniciar el temporizador de actualización de la barra
+        }
+
+
+        // ¡NUEVO! Manejador para el temporizador de la barra de progreso
+        private void ProgressBarUpdateTimer_Tick(object sender, EventArgs e)
+        {
+            if (!gameRunning)
+            {
+                progressBarUpdateTimer.Stop();
+                return;
+            }
+
+            // Calcular el tiempo transcurrido desde que apareció el objetivo
+            TimeSpan elapsedTime = DateTime.Now - actionStartTime;
+
+            // Determinar el tiempo total para la barra de progreso
+            int totalInterval = ACTION_TIME_LIMIT_MS;
+            if (currentTargetType == TargetType.HoldClick && isHolding)
+            {
+                totalInterval = HOLD_TIME_MS; // Si se está manteniendo, el tiempo de la barra es 1s
+            }
+
+            // Calcular el porcentaje restante
+            double percentageRemaining = 100 - (elapsedTime.TotalMilliseconds / totalInterval * 100);
+
+            // Asegurarse de que el valor esté dentro del rango de la barra de progreso
+            progressBarTimer.Value = Math.Max(0, Math.Min(100, (int)percentageRemaining));
         }
 
 
         private void DisappearTimer_Tick(object sender, EventArgs e)
         {
             disappearTimer.Stop();
-            disappearTimer2.Stop();
+            progressBarUpdateTimer.Stop(); // Detener la actualización de la barra de progreso
+            progressBarTimer.Value = 0; // Mostrar que el tiempo se agotó completamente
 
             if (!gameRunning) return;
 
             if (currentTargetType == TargetType.NoClick)
             {
                 TimeSpan timeTaken = DateTime.Now - actionStartTime;
-                UpdateScore("No Clickeo (Éxito)", timeTaken);
+                UpdateScore("No Clickeo (Éxito por tiempo)", timeTaken);
             }
-            else if (currentTargetType == TargetType.HoldClick && isHolding)
+            else if (currentTargetType == TargetType.HoldClick && isHolding && disappearTimer.Interval == HOLD_TIME_MS)
             {
-                TimeSpan timeTaken = DateTime.Now - actionStartTime;
-                UpdateScore($"Mantener Click ({ACTION_TIME_MS / 1000}s)", timeTaken);
+                // Éxito para 'Hold Click' si el timer de 1s se agota
+                TimeSpan totalTime = DateTime.Now - actionStartTime;
+                UpdateScore($"Mantener Click ({HOLD_TIME_MS / 1000}s)", totalTime);
+            }
+            else
+            {
+                // Penalización: El tiempo se agotó para SingleClick, DoubleClick, o HoldClick (no iniciado).
+                Penalize($"Fallo: Tiempo agotado para '{currentTargetType}'");
             }
         }
 
@@ -180,6 +228,8 @@ namespace AimTrainer
         {
             if (gameRunning && currentTargetType == TargetType.NoClick && targetButton.Bounds.Contains(e.Location) && e.Button == MouseButtons.Left)
             {
+                disappearTimer.Stop();
+                progressBarUpdateTimer.Stop(); // Detener barra
                 Penalize("Fallo: Clickeó el objetivo 'No Clickeo'");
             }
         }
@@ -190,6 +240,8 @@ namespace AimTrainer
 
             if (currentTargetType == TargetType.NoClick)
             {
+                disappearTimer.Stop();
+                progressBarUpdateTimer.Stop(); // Detener barra
                 Penalize("Fallo: Clickeó el objetivo 'No Clickeo'");
                 return;
             }
@@ -197,12 +249,21 @@ namespace AimTrainer
             if (currentTargetType == TargetType.HoldClick)
             {
                 isHolding = true;
-                actionStartTime = DateTime.Now;
-                disappearTimer.Start(); 
+                actionStartTime = DateTime.Now; // Reiniciar el tiempo para el "mantener"
+                disappearTimer.Stop(); // Detiene el timer de 5s
+                disappearTimer.Interval = HOLD_TIME_MS; // Establece el tiempo de espera de 1s
+                disappearTimer.Start();
+                // No reiniciar progressBarTimer aquí, el ProgressBarUpdateTimer_Tick lo ajustará.
             }
-
             else if (currentTargetType == TargetType.SingleClick || currentTargetType == TargetType.DoubleClick)
             {
+                if (clickCount == 0)
+                {
+                    disappearTimer.Stop(); // Detiene el timer de 5s al primer click
+                    progressBarUpdateTimer.Stop(); // Detener la barra al primer click para Single/Double
+                    progressBarTimer.Value = 100; // Opcional: reiniciar barra si la acción es inmediata
+                }
+
                 clickCount++;
                 clickTimer.Start();
 
@@ -218,8 +279,6 @@ namespace AimTrainer
                     TimeSpan timeTaken = DateTime.Now - actionStartTime;
                     UpdateScore("Doble Click", timeTaken);
                 }
-
-                if (clickCount >= 2) clickCount = 0;
             }
         }
 
@@ -229,18 +288,28 @@ namespace AimTrainer
 
             if (currentTargetType == TargetType.HoldClick)
             {
-                if (isHolding && disappearTimer.Enabled)
+                if (isHolding)
                 {
-                    disappearTimer.Stop();
-                    Penalize("Fallo: Soltó antes de tiempo el 'Hold Click'");
+                    if (disappearTimer.Interval == HOLD_TIME_MS && disappearTimer.Enabled)
+                    {
+                        disappearTimer.Stop();
+                        progressBarUpdateTimer.Stop(); // Detener barra
+                        Penalize($"Fallo: Soltó antes de tiempo el 'Hold Click' ({HOLD_TIME_MS / 1000}s)");
+                    }
                 }
                 isHolding = false;
+                disappearTimer.Interval = ACTION_TIME_LIMIT_MS; // Restablecer a 5s
+                // No reiniciar progressBarTimer aquí, el ProgressBarUpdateTimer_Tick lo ajustará al siguiente objetivo.
             }
         }
 
         private void ClickCountTimer_Tick(object sender, EventArgs e)
         {
             clickTimer.Stop();
+            if (gameRunning && currentTargetType == TargetType.DoubleClick && clickCount == 1)
+            {
+                Penalize("Fallo: El tiempo de Doble Click se agotó (solo 1 click)");
+            }
             clickCount = 0;
         }
 
@@ -261,14 +330,14 @@ namespace AimTrainer
                 Timestamp = DateTime.Now
             });
 
-            SpawnTarget(); 
+            SpawnTarget();
         }
 
         private void Penalize(string reason)
         {
             if (!gameRunning) return;
 
-            score = Math.Max(0, score - 1); 
+            score = Math.Max(0, score - 1);
             lblScore.Text = $"Puntuación: {score} (¡Fallo!)";
 
             results.Add(new ResultEntry
@@ -279,7 +348,7 @@ namespace AimTrainer
                 Timestamp = DateTime.Now
             });
 
-            SpawnTarget(); 
+            SpawnTarget();
         }
 
         private void btnExport_Click(object sender, EventArgs e)
