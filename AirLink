@@ -1,16 +1,19 @@
 #include <Wire.h> // Librería para comunicación I2C
 #include <Adafruit_MPU6050.h> // Librería del sensor MPU-6050
 #include <Adafruit_Sensor.h> // Librería base de Adafruit para sensores
-#include <BleMouse.h>
+#include <BleCombo.h> 
 
-BleMouse bleMouse("ESP32 Mouse", "ESP32", 100);
+
+BleComboKeyboard bleKeyboard("Airlink", "ESP32", 100);
+BleComboMouse bleMouse(&bleKeyboard); 
+
 Adafruit_MPU6050 mpu;
 const int VRX_PIN = 34;
 const int VRY_PIN = 35;
 
 void setup() {
   Serial.begin(115200); 
-  bleMouse.begin();
+  bleKeyboard.begin();
   pinMode(15  , INPUT_PULLUP);
   pinMode(10, INPUT_PULLUP);
   pinMode(9, INPUT_PULLUP);
@@ -34,7 +37,9 @@ void loop() {
   int z  = digitalRead( 15);
   static int l = 0; //cambia de girosc a joystick
   static int m = 0; //contador click
-  static int k = 0; //solo clickear 1 ves
+  static int n = 0;
+  static int k = 0;
+  static int r = 0; 
   int xValue = analogRead(VRX_PIN);
   int yValue = analogRead(VRY_PIN);
   sensors_event_t a, g, temp;
@@ -78,9 +83,8 @@ if (y == 0) {
                bleMouse.move(-g.gyro.z*20+xValue/207.3,-g.gyro.x*15+yValue/207.3);
                 break;
 
-            case 2: // Modo 2: Joystick Puro (Mouse)
-                    Serial.println("nope");
-
+            case 2: 
+               bleMouse.move(xValue/50, yValue/50);
                 break;
         }
 
@@ -100,7 +104,26 @@ k = 1;}}}
 m = 0;
 k = 0;
 bleMouse.release();}
-if (z == 0) {bleMouse.click(MOUSE_RIGHT);
-delay(600);}
-delay(30); // Pausa para no saturar el puerto serial
+
+
+
+if (z == 0){
+n = n+1;
+if(n > 7){
+ bleKeyboard.press(KEY_LEFT_CTRL);
+ bleKeyboard.press(KEY_LEFT_GUI);  
+ bleKeyboard.write('o'); 
+ bleKeyboard.releaseAll();
+ delay(150);
+}}
+if (z != 0) {
+if(n < 7){
+if(n !=0){
+if(k == 0){
+bleMouse.click(MOUSE_RIGHT);
+k = r;}}}
+n = 0;
+r = 0;}
+ 
+delay(30); 
 }
