@@ -108,22 +108,25 @@ bleMouse.release();}
 
 
 if (z == 0){
-n = n+1;
-if(n > 7){
- bleKeyboard.press(KEY_LEFT_CTRL);
- bleKeyboard.press(KEY_LEFT_GUI);  
- bleKeyboard.write('o'); 
- bleKeyboard.releaseAll();
- delay(150);
-}}
+n = n+1;}
+
+
 if (z != 0) {
 if(n < 7){
 if(n !=0){
 if(k == 0){
 bleMouse.click(MOUSE_RIGHT);
 k = r;}}}
+if(n > 7){
+ bleKeyboard.press(KEY_LEFT_CTRL);
+ bleKeyboard.press(KEY_LEFT_GUI);  
+ bleKeyboard.write('o'); 
+ bleKeyboard.releaseAll();
+ delay(150);
+}
 n = 0;
 r = 0;}
  
+
 delay(30); 
 }
